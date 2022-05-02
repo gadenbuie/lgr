@@ -13,6 +13,10 @@
 
 * added `as_LogEvent()` to coerce various event-like objects to `LogEvents`
 
+* added hidden `.rawMsg` property to LogEvents to store message without
+  string interpolation (e.g. that still contains the placeholders from 
+  `sprintf()` or `glue()`)
+
 
 # lgr 0.4.3
 

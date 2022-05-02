@@ -1,6 +1,9 @@
 context("Logger")
 
 
+# Logger ------------------------------------------------------------------
+
+
 
 test_that("logging conditions works", {
   e <- error("blahblah")
@@ -379,10 +382,16 @@ test_that("$config works with lists", {
 
 
 
+# Multi-Logger tests -------------------------------------------------------------
 
 test_that("Logger$log() dispatches to all appenders, even if some throw an error", {
   ln <- Logger$new("normal", propagate = FALSE)
   lg <- LoggerGlue$new("glue", propagate = FALSE)
+
+  on.exit({
+    ln$config(NULL)
+    lg$config(NULL)
+  })
 
   AppErr <- R6::R6Class(
     inherit = AppenderConsole,
@@ -416,6 +425,11 @@ test_that("Logger error contains useful call object", {
   l <- get_logger("test")
   g <- get_logger_glue("testglue")
 
+  on.exit({
+    l$config(NULL)
+    g$config(NULL)
+  })
+
   expect_warning(l$info("this will fail", e = stop()), "l\\$info")
   expect_warning(g$info("this will fail", e = stop()), "g\\$info")
 })
@@ -427,6 +441,11 @@ test_that("Logger error contains useful call object", {
 test_that("Appender error contains useful call object", {
   l <- get_logger("test")$set_propagate(FALSE)
   g <- get_logger_glue("testglue")$set_propagate(FALSE)
+
+  on.exit({
+    l$config(NULL)
+    g$config(NULL)
+  })
 
   AppenderFail <- R6::R6Class(
     "AppenderFail",
@@ -445,3 +464,24 @@ test_that("Appender error contains useful call object", {
   expect_warning(g$info("this will fail"), ".*AppenderFail.*g\\$info")
 })
 
+
+
+
+test_that(".rawMsg works", {
+  l <- get_logger("test")$set_propagate(FALSE)
+  g <- get_logger_glue("testglue")$set_propagate(FALSE)
+
+  on.exit({
+    l$config(NULL)
+    g$config(NULL)
+  })
+
+  l$info("foo %s", "bar")
+  g$fatal("hash {x}", x = "baz")
+
+  expect_identical(l$last_event$msg, "foo bar")
+  expect_identical(l$last_event$.rawMsg, "foo %s")
+
+  expect_identical(as.character(g$last_event$msg), "hash baz")
+  expect_identical(g$last_event$.rawMsg, "hash {x}")
+})

@@ -226,6 +226,7 @@ Logger <- R6::R6Class(
         }
 
         force(caller)
+        rawMsg <- msg
 
         if (missing(...)){
           vals <- list(
@@ -233,7 +234,8 @@ Logger <- R6::R6Class(
             level = level,
             timestamp = timestamp,
             caller = caller,
-            msg = msg
+            msg = msg,
+            .rawMsg = rawMsg
           )
         } else {
           dots <- list(...)
@@ -245,7 +247,8 @@ Logger <- R6::R6Class(
               level = level,
               timestamp = timestamp,
               caller = caller,
-              msg = msg
+              msg = msg,
+              .rawMsg = rawMsg
             )
           } else {
             not_named <- vapply(names(dots), is_blank, TRUE, USE.NAMES = FALSE)
@@ -259,7 +262,8 @@ Logger <- R6::R6Class(
                 level = level,
                 timestamp = timestamp,
                 caller = caller,
-                msg = msg
+                msg = msg,
+                .rawMsg = rawMsg
               ),
               dots[!not_named]
             )
@@ -896,6 +900,7 @@ LoggerGlue <- R6::R6Class(
           }
         })
 
+        rawMsg <- dots[[1]]
         msg <- do.call(glue::glue, args = c(dots, list(.envir = .envir)))
 
         # Check if LogEvent should be created
@@ -914,7 +919,8 @@ LoggerGlue <- R6::R6Class(
             level = level,
             timestamp = timestamp,
             caller = caller,
-            msg = msg
+            msg = msg,
+            .rawMsg = rawMsg
           )
         } else {
           dots <- list(...)
@@ -926,7 +932,8 @@ LoggerGlue <- R6::R6Class(
               level = level,
               timestamp = timestamp,
               caller = caller,
-              msg = msg
+              msg = msg,
+              .rawMsg = rawMsg
             ),
             dots[custom_fields]
           )
